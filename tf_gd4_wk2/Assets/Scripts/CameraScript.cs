@@ -14,6 +14,9 @@ public class CameraScript : MonoBehaviour
     public ParticleSystem ps1;
     public ParticleSystem ps2;
 
+    //public ParticleSystem ps3;
+    //public ParticleSystem ps4;
+
     public float spawParticles = 4f;
     public float ps1StartTime = 0.5f;
     public float ps2StartTime = 1f;
@@ -37,6 +40,9 @@ public class CameraScript : MonoBehaviour
                 position = kart.TransformPoint(finishOffset);
                 ps1.Play();
                 ps2.Play();
+
+                //ps3.Play();
+                //ps4.Play();
 
             }
 

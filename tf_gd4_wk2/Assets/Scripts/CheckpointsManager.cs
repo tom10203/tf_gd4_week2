@@ -5,9 +5,12 @@ using UnityEngine;
 public class CheckpointsManager : MonoBehaviour
 {
     public Transform[] checkpoints;
-    public GameObject car;
-    Car carScript;
-    public CameraScript cam;
+    public GameObject car1;
+    public GameObject car2;
+    Car carScript1;
+    Car carScript2;
+    public CameraScript cam1;
+    public CameraScript cam2;
 
 
     [HideInInspector]
@@ -27,14 +30,14 @@ public class CheckpointsManager : MonoBehaviour
         startTransformMeshRenderer = startCheckpoint.GetComponent<MeshRenderer>();
         startTransformMeshRenderer.enabled = false;
 
-        carScript = car.GetComponent<Car>();
+        carScript1 = car1.GetComponent<Car>();
+        carScript2 = car2.GetComponent<Car>();
         gameUIManager = gameUIManagerGO.GetComponent<GameUIManager>();
     }
     public void VerifyCheckpoint(Transform checkpoint)
     {
         if (checkpoint == startCheckpoint && checkpoints[i] == startCheckpoint)
         {
-            print($"startCheckpoint crossed");
             if (isFirst)
             {
                 isFirst = false;
@@ -45,28 +48,29 @@ public class CheckpointsManager : MonoBehaviour
      
                 lapNumber++;
                 gameUIManager.UpdateText(lapNumber);
-                //  Update UI
 
 
                 if (lapNumber == totalLaps)
                 {
-                    print($"Game End");
-                    CameraScript camScript = cam.GetComponent<CameraScript>();  
-                    carScript.isGameFinished = true;
-                    camScript.isGameFinished = true;
+                    CameraScript camScript1 = cam1.GetComponent<CameraScript>();
+                    CameraScript camScript2 = cam2.GetComponent<CameraScript>();
+
+                    carScript1.isGameFinished = true;
+                    camScript1.isGameFinished = true;
+
+                    carScript2.isGameFinished = true;
+                    camScript2.isGameFinished = true;
+
                     gameUIManager.EndGame();
 
                     // Adding below line so gameUIManager.EndGame() is only called once
-                    lapNumber++;
-                    
-                    
+                    lapNumber++;        
                 }
             }
         }
         if (checkpoints[i] == checkpoint)
         {
             MoveI();
-            print($"Next checkpoint is {i}");
         }
     }
 

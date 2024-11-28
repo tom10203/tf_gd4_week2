@@ -2,43 +2,67 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.SceneManagement;
 
 public class Car : MonoBehaviour
 {
+    [Header("Main Componenets")]
+    public int playerNumber;
     public Transform kart;
     public Transform sphere;
     public Transform spawnPoint;
+    public GameObject boostPS;
+    public GameObject driftPS;
     Rigidbody sphereRB;
-    public float turnSpeed;
+    string verticalInput;
+    string horizontalInput;
+    KeyCode driftButton;
+
+    [Header("Ground Move Speed Variables")]
     public float moveSpeed, moveSpeedT;
-    [HideInInspector]
     float speed;
+
+    [Header("Drift Variables")]
+    public float boostForce;
+    public float timeInbetweenBoost = 1f;
+    public float boostSpeed;
+    public float boostTime = 2f;
+    float boostTimer;
+    bool boost = false;
+    bool drifting = false;
+    float driftAngle = 0f;
+    Vector3 forceToAddinDrift;
+
+
     public Vector3 offset;
+
+    [Header("Rotation Variables")]
+    public float turnSpeed;
     public float groundAlignmentSpeed = 5f;
+    float dir;
+
+    [Header("Air Move Speed Variables")]
     public float gravity = 10f;
     public float dragFactor = 0.1f;
-    bool drifting = false;
-    float dir;
-    float driftAngle = 0f;
 
-    public GameObject blps;
-    public GameObject brps;
-    public ParticleSystem bl;
-    public ParticleSystem br;
-    public float psXVelocity = 2f;
-
-
-    Vector3 forceToAddinDrift;
-    Vector3 currentDrift;
-
-    bool boost;
-    public float boostForce;
-    public float rayDist = 1f;
-
+    [HideInInspector]
     public bool isGameFinished;
+
     void Start()
     {
         sphereRB = sphere.GetComponent<Rigidbody>();
+        if (playerNumber == 1)
+        {
+            driftButton = KeyCode.L;
+            verticalInput = "Vertical1";
+            horizontalInput = "Horizontal1";
+        }
+        else
+        {
+            driftButton = KeyCode.Space;
+            verticalInput = "Vertical2";
+            horizontalInput = "Horizontal2";
+        }
     }
 
     void Update()
@@ -47,19 +71,18 @@ public class Car : MonoBehaviour
 
         if (!isGameFinished)
         {
-            float horizontalInput = Input.GetAxis("Horizontal");
-            float verticalInput = Input.GetAxis("Vertical");
-
+            float horizontalInput = Input.GetAxis(this.horizontalInput);
+            float verticalInput = Input.GetAxis(this.verticalInput);
 
             if (Input.GetKeyDown(KeyCode.P))
             {
-                sphere.position = spawnPoint.position;
-                //kart.position = spawnPoint.position;
+                // Incase a car gets stuck
+                SceneManager.LoadScene(0);
             }
 
             if (verticalInput != 0)
             {
-                speed = Mathf.Lerp(speed, verticalInput * moveSpeed * Time.deltaTime * 1000f, moveSpeedT);
+                speed = Mathf.Lerp(speed, verticalInput * moveSpeed, moveSpeedT);
             }
             else
             {
@@ -68,31 +91,19 @@ public class Car : MonoBehaviour
 
 
             RaycastHit hit;
-            Debug.DrawRay(sphere.position, Vector3.down * rayDist, Color.red);
             if (Physics.Raycast(kart.position, Vector3.down, out hit, 1f, 1 << 6))
             {
-                // Create a rotation that combines ground normal and current rotation
-
                 Quaternion targetRotation = Quaternion.FromToRotation(kart.up, hit.normal) * kart.rotation;
                 kart.rotation = Quaternion.Slerp(kart.rotation, targetRotation, groundAlignmentSpeed * Time.deltaTime);
                 sphereRB.drag = 3f;
 
 
-                if (Input.GetKeyDown(KeyCode.Space) && horizontalInput != 0)
+                if (Input.GetKeyDown(driftButton) && horizontalInput != 0 && !boost && verticalInput > 0)
                 {
                     drifting = true;
+                    driftPS.SetActive(true);
                     dir = horizontalInput > 0 ? 1 : -1;
                     driftAngle = 0f;
-
-                    blps.SetActive(true);
-                    brps.SetActive(true);
-
-                    var blvel = bl.velocityOverLifetime;
-                    blvel.x = psXVelocity * dir;
-
-                    var brvel = br.velocityOverLifetime;
-                    brvel.x = psXVelocity * dir;
-
                 }
 
             }
@@ -104,15 +115,16 @@ public class Car : MonoBehaviour
             }
 
 
-            if (Input.GetKeyUp(KeyCode.Space))
+            if (Input.GetKeyUp(driftButton))
             {
                 if (drifting)
                 {
                     boost = true;
+                    boostTimer = 0f;
+                    speed = speed + boostSpeed;
+
                 }
                 drifting = false;
-                blps.SetActive(false);
-                brps.SetActive(false);
             }
 
             if (horizontalInput != 0)
@@ -124,13 +136,29 @@ public class Car : MonoBehaviour
                 Steer(horizontalInput);
             }
 
-            //print($"kart.forward {kart.forward}")
+            if (boost)
+            {
+                boostPS.SetActive(true);
+                driftPS.SetActive(false);
+                if (boostTimer > boostTime)
+                {
+                    boost = false;
+                }
+                boostTimer += Time.deltaTime;
+                speed = Mathf.Lerp(speed, moveSpeed + boostForce, Time.deltaTime);
+            }
+            else
+            {
+                boostPS.SetActive(false);
+            }
         }
+
+
         else
         {
             sphereRB.velocity = Vector3.Lerp(sphereRB.velocity, Vector3.zero, Time.deltaTime);  
         }
-        
+
     }
 
     void Steer(float direction)
@@ -162,13 +190,6 @@ public class Car : MonoBehaviour
 
             }
 
-            if (boost)
-            {
-                sphereRB.AddForce(kart.forward * boostForce, ForceMode.Acceleration);
-                boost = false;
-            }
         }
     }
-
-
 }

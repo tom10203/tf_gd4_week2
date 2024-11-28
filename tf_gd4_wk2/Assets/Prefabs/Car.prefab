@@ -48,13 +48,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   kart: {fileID: 7281278559036756028}
   sphere: {fileID: 9005713699411627105}
+  spawnPoint: {fileID: 0}
   turnSpeed: 0.12
-  moveSpeed: 25
+  moveSpeed: 10
   moveSpeedT: 0.5
   offset: {x: 0, y: -1.22, z: 0}
   groundAlignmentSpeed: 5
   gravity: 10
   dragFactor: 1
+  blps: {fileID: 0}
+  brps: {fileID: 0}
+  bl: {fileID: 0}
+  br: {fileID: 0}
+  psXVelocity: 2
+  boostForce: 5
+  rayDist: 1
+  isGameFinished: 0
 --- !u!1 &4676408124616368597
 GameObject:
   m_ObjectHideFlags: 0
